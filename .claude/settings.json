@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:5678/api/v1/node-types)",
+      "Bash(curl -s http://localhost:5678/healthz)",
+      "Bash(curl -s http://localhost:5678/api/v1/node-types -H 'accept: application/json')",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); nodes=[n for n in data.get\\(''''data'''',[]\\) if ''''afip'''' in n.get\\(''''name'''',''''''''\\).lower\\(\\)]; print\\(json.dumps\\(nodes, indent=2\\)\\)\")",
+      "Bash(node -e \"require\\(''/home/lucas/projects/n8n-nodes-afipsdk/dist/nodes/AfipSdk/AfipSdk.node.js''\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''n8n'''',{}\\), indent=2\\)\\); print\\(''''main:'''', d.get\\(''''main''''\\)\\); print\\(''''name:'''', d.get\\(''''name''''\\)\\)\")",
+      "Bash(n8n list:workflow)",
+      "Bash(node -e \":*)",
+      "Bash(pkill -f \"n8n start\")",
+      "Bash(pkill -f \"n8n/bin\")",
+      "Bash(grep -r \"poll\\\\|polling\" /home/lucas/projects/n8n-nodes-afipsdk --include=\"*.ts\" ! -path \"*/node_modules/*\")"
+    ]
+  }
+}
