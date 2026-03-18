@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-afipsdk",
 	"version": "0.1.0",
-	"description": "n8n nodes for AfipSDK integration.",
+	"description": "n8n nodes for Afip SDK integration.",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [

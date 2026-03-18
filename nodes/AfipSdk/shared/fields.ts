@@ -10,10 +10,12 @@ export interface RequiredParam {
  * @param requiredParams Lista de parámetros requeridos que se pre-cargan como ejemplo.
  */
 export function buildParameterFields(
+	resource: string,
 	operation: string,
 	requiredParams: RequiredParam[] = [],
 ): INodeProperties[] {
 	const displayWhen = {
+		resource: [resource],
 		operation: [operation],
 	};
 

@@ -12,20 +12,22 @@ import { makeRequestExecute } from './resources/makeRequest/execute';
 import { getLastXmlExecute } from './resources/getLastXml/execute';
 import { createPdfExecute } from './resources/createPdf/execute';
 import { createPdfFields } from './resources/createPdf';
-import { runAutomationFields } from './resources/runAutomation';
+import { runAutomationAndWaitFields } from './resources/runAutomationAndWait';
+import { runAutomationAndWaitExecute } from './resources/runAutomationAndWait/execute';
 import { runAutomationExecute } from './resources/runAutomation/execute';
+import { runAutomationFields } from './resources/runAutomation';
 
 export class AfipSdk implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'AfipSDK',
+		displayName: 'Afip SDK',
 		name: 'afipSdk',
-		icon: { light: 'file:afipsdk.svg', dark: 'file:afipsdk.dark.svg' },
+		icon: { light: 'file:../../icons/afipsdk.svg', dark: 'file:../../icons/afipsdk.dark.svg' },
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{ $parameter["operation"] }}',
-		description: 'Official AFIPsdk nodes for connecting to ARCA services.',
+		subtitle: '={{ $parameter["resource"] + ": " + $parameter["operation"] }}',
+		description: 'Official Afip SDK nodes.',
 		defaults: {
-			name: 'AfipSDK',
+			name: 'Afip SDK',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -37,23 +39,31 @@ export class AfipSdk implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{ name: 'Automation', value: 'automation' },
+					{ name: 'PDF', value: 'pdf' },
+					{ name: 'Util', value: 'util' },
+					{ name: 'Web Service', value: 'webService' },
+				],
+				default: 'webService',
+			},
+			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
+				displayOptions: { show: { resource: ['webService'] } },
 				options: [
 					{
-						name: 'Create A PDF',
-						value: 'createPdf',
-						action: 'Create a PDF',
-						description: 'Create a PDF of your bills, ready to send it to your customers',
-					},
-					{
-						name: 'Get Token Authorization (TA)',
+						name: 'Get Ticket De Acceso (TA)',
 						value: 'getTokenAuth',
-						action: 'Get token authorization (TA)',
+						action: 'Get ticket de acceso (TA)',
 						description:
-							"Before calling ARCA's web services, you need an access token (AT), also known as an authorization token",
+							'Before calling an ARCA web service, you need a TA, also known as an authorization token',
 					},
 					{
 						name: 'Get XML From Last Request',
@@ -62,49 +72,75 @@ export class AfipSdk implements INodeType {
 						description:
 							'Get an XML including the last request and response to send to ARCA support mail',
 					},
+				],
+				default: 'getTokenAuth',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['automation'] } },
+				options: [
 					{
-						name: 'Make Requests to ARCA Service',
-						value: 'makeRequest',
-						action: 'Make HTTP request to ARCA',
-						description: 'Send requests to the ARCA service using AfipSDK',
+						name: 'Get Automation Result',
+						value: 'getAutomationResult',
+						action: 'Get automation result',
+						description: 'Get automation result and retry if the automation is not complete',
 					},
 					{
 						name: 'Run Automation',
 						value: 'runAutomation',
 						action: 'Run automation',
-						description: 'Execute an AfipSDK automation and wait for its result',
+						description: 'Execute an Afip SDK automation',
+					},
+					{
+						name: 'Run Automation And Wait',
+						value: 'runAutomationAndWait',
+						action: 'Run automation and wait',
+						description: 'Execute an Afip SDK automation and wait for its result',
 					},
 				],
-				default: 'getTokenAuth',
+				default: 'runAutomation',
 			},
 			{
-				displayName: 'Custom Certificate',
-				name: 'additionalFields',
-				type: 'collection',
-				placeholder: 'Add Field',
-				default: {},
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['pdf'] } },
 				options: [
 					{
-						displayName: 'Cert',
-						name: 'cert',
-						type: 'string',
-						default: '',
-						description: 'Content of cert.crt file',
-					},
-					{
-						displayName: 'Key',
-						name: 'key',
-						type: 'string',
-						default: '',
-						description: 'Content of key.key file',
+						name: 'Create A PDF',
+						value: 'createPdf',
+						action: 'Create PDF',
+						description: 'Create a PDF of your bills and send it to your customers',
 					},
 				],
+				default: 'createPdf',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['webService'] } },
+				options: [
+					{
+						name: 'Make Requests to ARCA Service',
+						value: 'makeRequest',
+						action: 'Execute web service request',
+						description: 'Send requests to the ARCA web services',
+					},
+				],
+				default: 'makeRequest',
 			},
 
 			// ── Operations ───────────────────────────────────────────────
 			...getTokenAuthFields,
 			...makeRequestFields,
 			...createPdfFields,
+			...runAutomationAndWaitFields,
 			...runAutomationFields,
 		],
 		usableAsTool: true,
@@ -117,6 +153,7 @@ export class AfipSdk implements INodeType {
 		if (operation === 'makeRequest') return makeRequestExecute.call(this);
 		if (operation === 'getLastXml') return getLastXmlExecute.call(this);
 		if (operation === 'createPdf') return createPdfExecute.call(this);
+		if (operation === 'runAutomationAndWait') return runAutomationAndWaitExecute.call(this);
 		if (operation === 'runAutomation') return runAutomationExecute.call(this);
 
 		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);

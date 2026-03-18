@@ -1,17 +1,12 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+import { parseParametersJson } from '../../utils';
 
 export async function makeRequestExecute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
 	
 	if (operation === 'makeRequest') {
-		const raw = this.getNodeParameter('parametersJson', 0) as string;
-		let body: Record<string, unknown> = {};
-		try {
-			body = JSON.parse(raw);
-		} catch {
-			throw new NodeOperationError(this.getNode(), 'Params JSON is not valid');
-		}
+		const body = parseParametersJson(this);
 
 		const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {

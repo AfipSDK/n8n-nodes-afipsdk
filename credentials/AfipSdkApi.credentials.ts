@@ -8,9 +8,9 @@ import type {
 export class AfipSdkApi implements ICredentialType {
 	name = 'afipSdkApi';
 
-	displayName = 'AfipSDK API';
+	displayName = 'Afip SDK API';
 
-	icon: ICredentialType['icon'] = { light: 'file:example.svg', dark: 'file:example.dark.svg' };
+	icon: ICredentialType['icon'] = { light: 'file:../icons/afipsdk.svg', dark: 'file:../icons/afipsdk.dark.svg' };
 
 	documentationUrl = 'https://docs.afipsdk.com/';
 
