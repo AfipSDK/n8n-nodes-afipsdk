@@ -16,6 +16,8 @@ import { runAutomationAndWaitFields } from './resources/runAutomationAndWait';
 import { runAutomationAndWaitExecute } from './resources/runAutomationAndWait/execute';
 import { runAutomationExecute } from './resources/runAutomation/execute';
 import { runAutomationFields } from './resources/runAutomation';
+import { getAutomationResultFields } from './resources/getAutomationResult';
+import { getAutomationResultExecute } from './resources/getAutomationResult/execute';
 
 export class AfipSdk implements INodeType {
 	description: INodeTypeDescription = {
@@ -142,6 +144,7 @@ export class AfipSdk implements INodeType {
 			...createPdfFields,
 			...runAutomationAndWaitFields,
 			...runAutomationFields,
+			...getAutomationResultFields
 		],
 		usableAsTool: true,
 	};
@@ -155,6 +158,7 @@ export class AfipSdk implements INodeType {
 		if (operation === 'createPdf') return createPdfExecute.call(this);
 		if (operation === 'runAutomationAndWait') return runAutomationAndWaitExecute.call(this);
 		if (operation === 'runAutomation') return runAutomationExecute.call(this);
+		if (operation === 'getAutomationResult') return getAutomationResultExecute.call(this);
 
 		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
 	}

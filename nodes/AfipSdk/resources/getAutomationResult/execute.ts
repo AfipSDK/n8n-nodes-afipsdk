@@ -3,7 +3,7 @@ import { NodeOperationError, sleep } from 'n8n-workflow';
 
 const MAX_ATTEMPTS = 24;
 
-export async function runAutomationAndWaitExecute(
+export async function getAutomationResultExecute(
 	this: IExecuteFunctions,
 ): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
