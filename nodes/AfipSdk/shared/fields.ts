@@ -29,7 +29,7 @@ export function buildParameterFields(
 
 	return [
 		{
-			displayName: 'Params (JSON)',
+			displayName: 'Body (JSON)',
 			name: 'parametersJson',
 			type: 'json',
 			default: jsonDefault,

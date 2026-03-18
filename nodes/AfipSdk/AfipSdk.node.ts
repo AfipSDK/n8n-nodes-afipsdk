@@ -68,11 +68,10 @@ export class AfipSdk implements INodeType {
 							'Before calling an ARCA web service, you need a TA, also known as an authorization token',
 					},
 					{
-						name: 'Get XML From Last Request',
-						value: 'getLastXml',
-						action: 'Get XML from last request',
-						description:
-							'Get an XML including the last request and response to send to ARCA support mail',
+						name: 'Make Requests to ARCA Service',
+						value: 'makeRequest',
+						action: 'Execute web service request',
+						description: 'Send requests to the ARCA web services',
 					},
 				],
 				default: 'getTokenAuth',
@@ -126,16 +125,17 @@ export class AfipSdk implements INodeType {
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
-				displayOptions: { show: { resource: ['webService'] } },
+				displayOptions: { show: { resource: ['util'] } },
 				options: [
 					{
-						name: 'Make Requests to ARCA Service',
-						value: 'makeRequest',
-						action: 'Execute web service request',
-						description: 'Send requests to the ARCA web services',
+						name: 'Get XML From Last Request',
+						value: 'getLastXml',
+						action: 'Get XML from last request',
+						description:
+							'Get an XML including the last request and response to send to ARCA support mail',
 					},
 				],
-				default: 'makeRequest',
+				default: 'getLastXml',
 			},
 
 			// ── Operations ───────────────────────────────────────────────
@@ -144,7 +144,7 @@ export class AfipSdk implements INodeType {
 			...createPdfFields,
 			...runAutomationAndWaitFields,
 			...runAutomationFields,
-			...getAutomationResultFields
+			...getAutomationResultFields,
 		],
 		usableAsTool: true,
 	};

@@ -8,7 +8,7 @@ export const getTokenAuthFields: INodeProperties[] = [
 		type: 'collection',
 		placeholder: 'Add Field',
 		default: {},
-		displayOptions: { show: { resource: ['auth'], operation: ['getTokenAuth'] } },
+		displayOptions: { show: { resource: ['webService'], operation: ['getTokenAuth'] } },
 		options: [
 			{
 				displayName: 'Cert',
@@ -26,10 +26,10 @@ export const getTokenAuthFields: INodeProperties[] = [
 			},
 		],
 	},
-	...buildParameterFields('auth', 'getTokenAuth', [
+	...buildParameterFields('webService', 'getTokenAuth', [
 		{ name: 'environment', example: 'dev' },
-		{ name: 'wsid', example: 'wsfe' },
 		{ name: 'tax_id', example: '20409378472' },
+		{ name: 'wsid', example: 'wsfe' },
 		{ name: 'force_create', example: false },
 	]),
 ];
