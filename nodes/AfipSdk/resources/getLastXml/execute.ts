@@ -14,5 +14,5 @@ export async function getLastXmlExecute(this: IExecuteFunctions): Promise<INodeE
 		return [this.helpers.returnJsonArray(response)];
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not sopported`);
+	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
 }

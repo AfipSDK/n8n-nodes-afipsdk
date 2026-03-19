@@ -18,5 +18,5 @@ export async function makeRequestExecute(this: IExecuteFunctions): Promise<INode
 		return [this.helpers.returnJsonArray(response)];
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not sopported`);
+	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
 }
