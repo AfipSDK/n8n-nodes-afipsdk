@@ -8,8 +8,8 @@
 		"n8n-community-node-package"
 	],
 	"author": {
-		"name": "Lucas",
-		"email": "lucas@afipsdk.com"
+		"name": "AfipSDK team",
+		"email": "ayuda@afipsdk.com"
 	},
 	"repository": {
 		"type": "git",
