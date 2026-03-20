@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/afipsdk/n8n-nodes-afipsdk.git"
+		"url": "https://github.com/AfipSDK/n8n-nodes-afipsdk"
 	},
 	"publishConfig": {
 		"provenance": true
