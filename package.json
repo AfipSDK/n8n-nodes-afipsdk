@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-afipsdk",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"description": "n8n nodes for Afip SDK integration.",
 	"license": "MIT",
 	"homepage": "",
@@ -13,7 +13,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/AfipSDK/n8n-nodes-afipsdk.git"
+		"url": "git+https://github.com/afipsdk/n8n-nodes-afipsdk.git"
+	},
+	"publishConfig": {
+		"provenance": true
 	},
 	"scripts": {
 		"build": "n8n-node build",
