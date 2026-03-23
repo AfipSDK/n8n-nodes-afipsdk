@@ -4,19 +4,26 @@ import { parseParametersJson } from '../../utils';
 
 export async function createPdfExecute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
-	
-	if (operation === 'createPdf') {
-		const body = parseParametersJson(this);
+	const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
 
-		const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	if (operation !== 'createPdf') {
+		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	}
+
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		const body = parseParametersJson(this, itemIndex);
+
 		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
 			method: 'POST',
 			url: `${baseUrl}/pdfs`,
 			body,
 			json: true,
 		});
-		return [this.helpers.returnJsonArray(response)];
+		const responseItems = this.helpers.returnJsonArray(response);
+		returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	return [returnData];
 }

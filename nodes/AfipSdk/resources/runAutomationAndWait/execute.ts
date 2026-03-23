@@ -9,11 +9,17 @@ export async function runAutomationAndWaitExecute(
 	this: IExecuteFunctions,
 ): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
+	const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
 
-	if (operation === 'runAutomationAndWait') {
-		const body = parseParametersJson(this);
+	if (operation !== 'runAutomationAndWait') {
+		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	}
 
-		const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		const body = parseParametersJson(this, itemIndex);
+
 		const created = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
 			method: 'POST',
 			url: `${baseUrl}/automations`,
@@ -23,9 +29,10 @@ export async function runAutomationAndWaitExecute(
 
 		const id = (created as { id: string }).id;
 		if (!id) {
-			throw new NodeOperationError(this.getNode(), 'Automation did not return an id');
+			throw new NodeOperationError(this.getNode(), 'Automation did not return an id', { itemIndex });
 		}
 
+		let resolved = false;
 		for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
 			await sleep(POLL_INTERVAL_MS);
 
@@ -36,15 +43,21 @@ export async function runAutomationAndWaitExecute(
 			});
 
 			if ((result as { status: string }).status !== 'in_process') {
-				return [this.helpers.returnJsonArray(result)];
+				const responseItems = this.helpers.returnJsonArray(result);
+				returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+				resolved = true;
+				break;
 			}
 		}
 
-		throw new NodeOperationError(
-			this.getNode(),
-			`Automation "${body.automation}" timed out after ${(MAX_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s`,
-		);
+		if (!resolved) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`Automation "${body.automation}" timed out after ${(MAX_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s`,
+				{ itemIndex },
+			);
+		}
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	return [returnData];
 }

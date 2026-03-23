@@ -7,12 +7,19 @@ export async function getAutomationResultExecute(
 	this: IExecuteFunctions,
 ): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
+	const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
 
-	if (operation === 'getAutomationResult') {
-		const automationId = this.getNodeParameter('automationId', 0) as string;
-		const secondsToWait = this.getNodeParameter('secondsToWait', 0) as number * 1000;
-		const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	if (operation !== 'getAutomationResult') {
+		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	}
 
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		const automationId = this.getNodeParameter('automationId', itemIndex) as string;
+		const secondsToWait = this.getNodeParameter('secondsToWait', itemIndex) as number * 1000;
+
+		let resolved = false;
 		for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
 			await sleep(secondsToWait);
 			const result = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
@@ -22,15 +29,21 @@ export async function getAutomationResultExecute(
 			});
 
 			if ((result as { status: string }).status !== 'in_process') {
-				return [this.helpers.returnJsonArray(result)];
+				const responseItems = this.helpers.returnJsonArray(result);
+				returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+				resolved = true;
+				break;
 			}
 		}
 
-		throw new NodeOperationError(
-			this.getNode(),
-			`Get Automation result timed out after ${(MAX_ATTEMPTS * secondsToWait)}s`,
-		);
+		if (!resolved) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`Get Automation result timed out after ${MAX_ATTEMPTS * secondsToWait}s`,
+				{ itemIndex },
+			);
+		}
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	return [returnData];
 }

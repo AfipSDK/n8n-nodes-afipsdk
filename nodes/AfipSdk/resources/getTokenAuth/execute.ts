@@ -6,12 +6,18 @@ export async function getTokenAuthExecute(
 	this: IExecuteFunctions,
 ): Promise<INodeExecutionData[][]> {
 	const operation = this.getNodeParameter('operation', 0) as string;
-	
-	if (operation === 'getTokenAuth') {
-		const body = parseParametersJson(this);
+	const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
 
-		const baseUrl = (await this.getCredentials('afipSdkApi')).baseUrl as string;
-		const additionalFields = this.getNodeParameter('additionalFields', 0) as {
+	if (operation !== 'getTokenAuth') {
+		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	}
+
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		const body = parseParametersJson(this, itemIndex);
+
+		const additionalFields = this.getNodeParameter('additionalFields', itemIndex) as {
 			cert?: string;
 			key?: string;
 		};
@@ -29,8 +35,9 @@ export async function getTokenAuthExecute(
 			json: true,
 		});
 
-		return [this.helpers.returnJsonArray(response)];
+		const responseItems = this.helpers.returnJsonArray(response);
+		returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
 	}
 
-	throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
+	return [returnData];
 }

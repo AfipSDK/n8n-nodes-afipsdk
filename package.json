@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-afipsdk",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "n8n nodes for Afip SDK integration.",
 	"license": "MIT",
 	"homepage": "",
@@ -31,7 +31,7 @@
 		"dist"
 	],
 	"n8n": {
-		"n8nNodesApiVersion": 1,
+		"n8nNodesApiVersion": 2,
 		"strict": true,
 		"credentials": [
 			"dist/credentials/AfipSdkApi.credentials.js"
