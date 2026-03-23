@@ -61,9 +61,9 @@ export class AfipSdk implements INodeType {
 				displayOptions: { show: { resource: ['webService'] } },
 				options: [
 					{
-						name: 'Get Ticket De Acceso (TA)',
+						name: 'Get Authorization Token (TA)',
 						value: 'getTokenAuth',
-						action: 'Get ticket de acceso (TA)',
+						action: 'Get authorization token (TA)',
 						description:
 							'Before calling an ARCA web service, you need a TA, also known as an authorization token',
 					},

@@ -24,7 +24,7 @@ Search for `n8n-nodes-afipsdk` in the community nodes panel.
 
 | Operation | Description |
 |-----------|-------------|
-| **Get Ticket De Acceso (TA)** | Obtains an authorization token (Ticket de Acceso) required before calling any ARCA web service. Accepts `environment`, `tax_id`, `wsid`, and `force_create`. Supports custom `cert`/`key` for non-default certificates. |
+| **Get Authorization Token (TA)** | Obtains an authorization token (Ticket de Acceso) required before calling any ARCA web service. Accepts `environment`, `tax_id`, `wsid`, and `force_create`. Supports custom `cert`/`key` for non-default certificates. |
 | **Make Requests to ARCA Service** | Sends requests to any ARCA web service using a previously obtained TA. |
 
 ### Automation
