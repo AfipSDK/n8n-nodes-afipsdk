@@ -13,16 +13,33 @@ export async function createPdfExecute(this: IExecuteFunctions): Promise<INodeEx
 	}
 
 	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-		const body = parseParametersJson(this, itemIndex);
+		try {
+			const body = parseParametersJson(this, itemIndex);
 
-		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
-			method: 'POST',
-			url: `${baseUrl}/pdfs`,
-			body,
-			json: true,
-		});
-		const responseItems = this.helpers.returnJsonArray(response);
-		returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+			const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
+				method: 'POST',
+				url: `${baseUrl}/pdfs`,
+				body,
+				json: true,
+			});
+
+			const responseItems = this.helpers.returnJsonArray(response);
+			returnData.push(
+				...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })),
+			);
+		} catch (error) {
+			if (this.continueOnFail()) {
+				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
+			} else {
+				if (error.context) {
+					error.context.itemIndex = itemIndex;
+					throw error;
+				}
+				throw new NodeOperationError(this.getNode(), error, {
+					itemIndex,
+				});
+			}
+		}
 	}
 
 	return [returnData];

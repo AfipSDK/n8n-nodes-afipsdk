@@ -6,8 +6,8 @@ export interface RequiredParam {
 }
 
 /**
- * Genera el campo de parámetros JSON para un resource/operation dado.
- * @param requiredParams Lista de parámetros requeridos que se pre-cargan como ejemplo.
+ * Generates the JSON parameters field for a given resource/operation.
+ * @param requiredParams List of required parameters pre-loaded as an example.
  */
 export function buildParameterFields(
 	resource: string,

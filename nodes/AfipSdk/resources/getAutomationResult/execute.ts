@@ -16,32 +16,44 @@ export async function getAutomationResultExecute(
 	}
 
 	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-		const automationId = this.getNodeParameter('automationId', itemIndex) as string;
-		const secondsToWait = this.getNodeParameter('secondsToWait', itemIndex) as number * 1000;
+		try {
+			const automationId = this.getNodeParameter('automationId', itemIndex) as string;
+			const secondsToWait = this.getNodeParameter('secondsToWait', itemIndex) as number * 1000;
 
-		let resolved = false;
-		for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-			await sleep(secondsToWait);
-			const result = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
-				method: 'GET',
-				url: `${baseUrl}/automations/${automationId}`,
-				json: true,
-			});
+			let resolved = false;
+			for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+				await sleep(secondsToWait);
+				const result = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
+					method: 'GET',
+					url: `${baseUrl}/automations/${automationId}`,
+					json: true,
+				});
 
-			if ((result as { status: string }).status !== 'in_process') {
-				const responseItems = this.helpers.returnJsonArray(result);
-				returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
-				resolved = true;
-				break;
+				if ((result as { status: string }).status !== 'in_process') {
+					const responseItems = this.helpers.returnJsonArray(result);
+					returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+					resolved = true;
+					break;
+				}
 			}
-		}
 
-		if (!resolved) {
-			throw new NodeOperationError(
-				this.getNode(),
-				`Get Automation result timed out after ${MAX_ATTEMPTS * secondsToWait}s`,
-				{ itemIndex },
-			);
+			if (!resolved) {
+				throw new NodeOperationError(
+					this.getNode(),
+					`Get Automation result timed out after ${MAX_ATTEMPTS * secondsToWait}s`,
+					{ itemIndex },
+				);
+			}
+		} catch (error) {
+			if (this.continueOnFail()) {
+				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
+			} else {
+				if (error.context) {
+					error.context.itemIndex = itemIndex;
+					throw error;
+				}
+				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+			}
 		}
 	}
 

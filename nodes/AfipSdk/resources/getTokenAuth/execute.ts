@@ -15,28 +15,40 @@ export async function getTokenAuthExecute(
 	}
 
 	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-		const body = parseParametersJson(this, itemIndex);
+		try {
+			const body = parseParametersJson(this, itemIndex);
 
-		const additionalFields = this.getNodeParameter('additionalFields', itemIndex) as {
-			cert?: string;
-			key?: string;
-		};
-		const cert = additionalFields?.cert;
-		const key = additionalFields?.key;
+			const additionalFields = this.getNodeParameter('additionalFields', itemIndex) as {
+				cert?: string;
+				key?: string;
+			};
+			const cert = additionalFields?.cert;
+			const key = additionalFields?.key;
 
-		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
-			method: 'POST',
-			url: `${baseUrl}/afip/auth`,
-			body: {
-				...body,
-				...(cert !== undefined && { cert }),
-				...(key !== undefined && { key }),
-			},
-			json: true,
-		});
+			const response = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
+				method: 'POST',
+				url: `${baseUrl}/afip/auth`,
+				body: {
+					...body,
+					...(cert !== undefined && { cert }),
+					...(key !== undefined && { key }),
+				},
+				json: true,
+			});
 
-		const responseItems = this.helpers.returnJsonArray(response);
-		returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+			const responseItems = this.helpers.returnJsonArray(response);
+			returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+		} catch (error) {
+			if (this.continueOnFail()) {
+				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
+			} else {
+				if (error.context) {
+					error.context.itemIndex = itemIndex;
+					throw error;
+				}
+				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+			}
+		}
 	}
 
 	return [returnData];

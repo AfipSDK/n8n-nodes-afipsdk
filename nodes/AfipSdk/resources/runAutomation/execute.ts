@@ -15,22 +15,34 @@ export async function runAutomationExecute(
 	}
 
 	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-		const body = parseParametersJson(this, itemIndex);
+		try {
+			const body = parseParametersJson(this, itemIndex);
 
-		const created = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
-			method: 'POST',
-			url: `${baseUrl}/automations`,
-			body,
-			json: true,
-		});
+			const created = await this.helpers.httpRequestWithAuthentication.call(this, 'afipSdkApi', {
+				method: 'POST',
+				url: `${baseUrl}/automations`,
+				body,
+				json: true,
+			});
 
-		const id = (created as { id: string }).id;
-		if (!id) {
-			throw new NodeOperationError(this.getNode(), 'Automation did not return an id', { itemIndex });
+			const id = (created as { id: string }).id;
+			if (!id) {
+				throw new NodeOperationError(this.getNode(), 'Automation did not return an id', { itemIndex });
+			}
+
+			const responseItems = this.helpers.returnJsonArray(created);
+			returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+		} catch (error) {
+			if (this.continueOnFail()) {
+				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
+			} else {
+				if (error.context) {
+					error.context.itemIndex = itemIndex;
+					throw error;
+				}
+				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+			}
 		}
-
-		const responseItems = this.helpers.returnJsonArray(created);
-		returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
 	}
 
 	return [returnData];

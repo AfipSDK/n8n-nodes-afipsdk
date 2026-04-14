@@ -3,7 +3,7 @@
 	"version": "1.0.2",
 	"description": "n8n nodes for Afip SDK integration.",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/AfipSDK/n8n-nodes-afipsdk",
 	"keywords": [
 		"n8n-community-node-package"
 	],
