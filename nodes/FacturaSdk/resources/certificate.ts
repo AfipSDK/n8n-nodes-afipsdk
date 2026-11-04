@@ -32,6 +32,13 @@ export const certificateOperations: INodeProperties = {
 				'Upload a certificate (cert and key in PEM) or create one in ARCA (source automation, with the tax password)',
 		},
 		{
+			name: 'Delete',
+			value: 'delete',
+			action: 'Delete a certificate',
+			description:
+				'Delete a certificate: it disappears from the project without being revoked in ARCA. The issuers that used it keep their reference.',
+		},
+		{
 			name: 'Get',
 			value: 'get',
 			action: 'Get a certificate',
@@ -40,6 +47,13 @@ export const certificateOperations: INodeProperties = {
 			name: 'Get Many',
 			value: 'getAll',
 			action: 'Get many certificates',
+		},
+		{
+			name: 'Renew',
+			value: 'renew',
+			action: 'Renew a certificate',
+			description:
+				'Renew a certificate in place, keeping its ID: upload the new cert and key in PEM, or renew it in ARCA (source automation, with the tax password). A revoked certificate can not be renewed.',
 		},
 		{
 			name: 'Revoke',
@@ -54,14 +68,15 @@ export const certificateOperations: INodeProperties = {
 export const certificateFields: INodeProperties[] = [
 	idField(
 		RESOURCE,
-		['get', 'revoke', 'authorize'],
+		['get', 'revoke', 'renew', 'delete', 'authorize'],
 		'certificateId',
 		'Certificate ID',
 		'ID of the certificate',
 	),
 	bodyField(RESOURCE, 'create', { tax_id: '20111111112', cert: 'VALID_CERT', key: 'VALID_KEY' }),
+	bodyField(RESOURCE, 'renew', { cert: 'VALID_CERT', key: 'VALID_KEY' }),
 	bodyField(RESOURCE, 'authorize', { password: '<CLAVE_FISCAL>' }),
-	...waitFields(RESOURCE, ['create', 'authorize']),
+	...waitFields(RESOURCE, ['create', 'renew', 'authorize']),
 	...listFields(RESOURCE, 'getAll', [
 		{
 			displayName: 'Tax ID (CUIT)',
@@ -91,9 +106,9 @@ export async function certificateExecute(
 ): Promise<IDataObject | IDataObject[]> {
 	const certificateId = () => this.getNodeParameter('certificateId', itemIndex) as string;
 
-	if (operation === 'create' || operation === 'authorize') {
+	if (operation === 'create' || operation === 'renew' || operation === 'authorize') {
 		const path =
-			operation === 'create' ? 'certificates' : `certificates/${certificateId()}/authorize`;
+			operation === 'create' ? 'certificates' : `certificates/${certificateId()}/${operation}`;
 		const wait = this.getNodeParameter('wait', itemIndex, true) as boolean;
 		const secondsToWait = this.getNodeParameter('secondsToWait', itemIndex, 3) as number;
 
@@ -117,6 +132,12 @@ export async function certificateExecute(
 
 	if (operation === 'revoke') {
 		return facturaSdkRequest(this, 'POST', `certificates/${certificateId()}/revoke`);
+	}
+
+	if (operation === 'delete') {
+		await facturaSdkRequest(this, 'DELETE', `certificates/${certificateId()}`);
+
+		return { success: true };
 	}
 
 	throw new Error(`Operation "${operation}" not supported`);

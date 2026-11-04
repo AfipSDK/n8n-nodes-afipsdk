@@ -57,7 +57,7 @@ Search for `n8n-nodes-afipsdk` in the community nodes panel.
 |----------|------------|
 | **Invoice** | Create (with `Idempotency-Key` and an optional wait for the final status), Get, Get Many, Cancel |
 | **Issuer** | Create, Get, Get Many, Update, Delete, Lookup (registration data of a CUIT), Get Sales Points, Create Sales Point, Create Certificate, Accept Delegation, Verify |
-| **Certificate** | Create (upload or create in ARCA), Get, Get Many, Revoke, Authorize |
+| **Certificate** | Create (upload or create in ARCA), Get, Get Many, Revoke, Renew (upload or in ARCA, keeping its ID), Delete, Authorize |
 | **Webhook Endpoint** | Create, Get, Get Many, Update, Rotate Secret, Test, Get Deliveries |
 | **Automation** | Get, with an optional wait until it finishes |
 
