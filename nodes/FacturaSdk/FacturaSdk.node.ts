@@ -38,7 +38,7 @@ export class FacturaSdk implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Factura SDK',
 		name: 'facturaSdk',
-		icon: { light: 'file:../../icons/afipsdk.svg', dark: 'file:../../icons/afipsdk.dark.svg' },
+		icon: { light: 'file:../../icons/facturasdk.svg', dark: 'file:../../icons/facturasdk.dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{ $parameter["resource"] + ": " + $parameter["operation"] }}',

@@ -12,7 +12,7 @@ export class FacturaSdkTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Factura SDK Trigger',
 		name: 'facturaSdkTrigger',
-		icon: { light: 'file:../../icons/afipsdk.svg', dark: 'file:../../icons/afipsdk.dark.svg' },
+		icon: { light: 'file:../../icons/facturasdk.svg', dark: 'file:../../icons/facturasdk.dark.svg' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{ $parameter["events"].join(", ") }}',

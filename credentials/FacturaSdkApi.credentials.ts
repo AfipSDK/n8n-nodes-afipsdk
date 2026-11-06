@@ -11,8 +11,8 @@ export class FacturaSdkApi implements ICredentialType {
 	displayName = 'Factura SDK API';
 
 	icon: ICredentialType['icon'] = {
-		light: 'file:../icons/afipsdk.svg',
-		dark: 'file:../icons/afipsdk.dark.svg',
+		light: 'file:../icons/facturasdk.svg',
+		dark: 'file:../icons/facturasdk.dark.svg',
 	};
 
 	documentationUrl = 'https://afipsdk.com/docs/facturasdk/access-tokens';
