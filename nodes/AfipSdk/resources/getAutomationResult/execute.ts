@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError, sleep } from 'n8n-workflow';
+import { itemError } from '../../../shared/errors';
 
 const MAX_ATTEMPTS = 24;
 
@@ -18,7 +19,7 @@ export async function getAutomationResultExecute(
 	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 		try {
 			const automationId = this.getNodeParameter('automationId', itemIndex) as string;
-			const secondsToWait = this.getNodeParameter('secondsToWait', itemIndex) as number * 1000;
+			const secondsToWait = (this.getNodeParameter('secondsToWait', itemIndex) as number) * 1000;
 
 			let resolved = false;
 			for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -31,7 +32,9 @@ export async function getAutomationResultExecute(
 
 				if ((result as { status: string }).status !== 'in_process') {
 					const responseItems = this.helpers.returnJsonArray(result);
-					returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+					returnData.push(
+						...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })),
+					);
 					resolved = true;
 					break;
 				}
@@ -46,14 +49,14 @@ export async function getAutomationResultExecute(
 			}
 		} catch (error) {
 			if (this.continueOnFail()) {
-				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
-			} else {
-				if (error.context) {
-					error.context.itemIndex = itemIndex;
-					throw error;
-				}
-				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+				returnData.push({
+					json: { error: (error as Error).message },
+					pairedItem: { item: itemIndex },
+				});
+				continue;
 			}
+
+			throw itemError(this.getNode(), error, itemIndex);
 		}
 	}
 

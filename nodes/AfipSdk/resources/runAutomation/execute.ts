@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+import { itemError } from '../../../shared/errors';
 import { parseParametersJson } from '../../utils';
 
 export async function runAutomationExecute(
@@ -27,21 +28,25 @@ export async function runAutomationExecute(
 
 			const id = (created as { id: string }).id;
 			if (!id) {
-				throw new NodeOperationError(this.getNode(), 'Automation did not return an id', { itemIndex });
+				throw new NodeOperationError(this.getNode(), 'Automation did not return an id', {
+					itemIndex,
+				});
 			}
 
 			const responseItems = this.helpers.returnJsonArray(created);
-			returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+			returnData.push(
+				...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })),
+			);
 		} catch (error) {
 			if (this.continueOnFail()) {
-				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
-			} else {
-				if (error.context) {
-					error.context.itemIndex = itemIndex;
-					throw error;
-				}
-				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+				returnData.push({
+					json: { error: (error as Error).message },
+					pairedItem: { item: itemIndex },
+				});
+				continue;
 			}
+
+			throw itemError(this.getNode(), error, itemIndex);
 		}
 	}
 
