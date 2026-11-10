@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+import { itemError } from '../../../shared/errors';
 import { parseParametersJson } from '../../utils';
 
 export async function getTokenAuthExecute(
@@ -37,17 +38,19 @@ export async function getTokenAuthExecute(
 			});
 
 			const responseItems = this.helpers.returnJsonArray(response);
-			returnData.push(...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })));
+			returnData.push(
+				...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })),
+			);
 		} catch (error) {
 			if (this.continueOnFail()) {
-				returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: itemIndex } });
-			} else {
-				if (error.context) {
-					error.context.itemIndex = itemIndex;
-					throw error;
-				}
-				throw new NodeOperationError(this.getNode(), error, { itemIndex });
+				returnData.push({
+					json: { error: (error as Error).message },
+					pairedItem: { item: itemIndex },
+				});
+				continue;
 			}
+
+			throw itemError(this.getNode(), error, itemIndex);
 		}
 	}
 

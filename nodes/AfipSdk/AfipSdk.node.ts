@@ -84,19 +84,19 @@ export class AfipSdk implements INodeType {
 				displayOptions: { show: { resource: ['automation'] } },
 				options: [
 					{
-						name: 'Get Automation Result',
+						name: 'Get Result',
 						value: 'getAutomationResult',
 						action: 'Get automation result',
 						description: 'Get automation result and retry if the automation is not complete',
 					},
 					{
-						name: 'Run Automation',
+						name: 'Run',
 						value: 'runAutomation',
 						action: 'Run automation',
 						description: 'Execute an Afip SDK automation',
 					},
 					{
-						name: 'Run Automation And Wait',
+						name: 'Run and Wait',
 						value: 'runAutomationAndWait',
 						action: 'Run automation and wait',
 						description: 'Execute an Afip SDK automation and wait for its result',
@@ -112,7 +112,7 @@ export class AfipSdk implements INodeType {
 				displayOptions: { show: { resource: ['pdf'] } },
 				options: [
 					{
-						name: 'Create A PDF',
+						name: 'Create',
 						value: 'createPdf',
 						action: 'Create PDF',
 						description: 'Create a PDF of your bills and send it to your customers',
