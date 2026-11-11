@@ -14,6 +14,20 @@ export const getAutomationResultFields: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Wait For Result',
+		name: 'wait',
+		type: 'boolean',
+		default: true,
+		description:
+			'Whether to check the automation until it finishes, or to return its current state at once',
+		displayOptions: {
+			show: {
+				resource: ['automation'],
+				operation: ['getAutomationResult'],
+			},
+		},
+	},
+	{
 		displayName: 'Seconds To Wait',
 		name: 'secondsToWait',
 		type: 'number',
@@ -22,6 +36,7 @@ export const getAutomationResultFields: INodeProperties[] = [
 			show: {
 				resource: ['automation'],
 				operation: ['getAutomationResult'],
+				wait: [true],
 			},
 		},
 	},

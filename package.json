@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-afipsdk",
-	"version": "1.1.1",
-	"description": "n8n nodes for Afip SDK integration.",
+	"version": "1.2.0",
+	"description": "n8n nodes for Afip SDK: ARCA web services, automations, PDFs and electronic invoicing with Factura SDK.",
 	"license": "MIT",
 	"homepage": "https://github.com/AfipSDK/n8n-nodes-afipsdk",
 	"keywords": [
@@ -37,7 +37,8 @@
 			"dist/credentials/AfipSdkApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/AfipSdk/AfipSdk.node.js"
+			"dist/nodes/AfipSdk/AfipSdk.node.js",
+			"dist/nodes/AfipSdkTrigger/AfipSdkTrigger.node.js"
 		]
 	},
 	"devDependencies": {

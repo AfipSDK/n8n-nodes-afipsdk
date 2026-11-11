@@ -1,10 +1,12 @@
 import type {
+	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { itemError } from '../shared/errors';
 import { getTokenAuthFields } from './resources/getTokenAuth';
 import { getTokenAuthExecute } from './resources/getTokenAuth/execute';
 import { makeRequestFields } from './resources/makeRequest';
@@ -18,6 +20,32 @@ import { runAutomationExecute } from './resources/runAutomation/execute';
 import { runAutomationFields } from './resources/runAutomation';
 import { getAutomationResultFields } from './resources/getAutomationResult';
 import { getAutomationResultExecute } from './resources/getAutomationResult/execute';
+import {
+	certificateExecute,
+	certificateFields,
+	certificateOperations,
+} from './facturasdk/resources/certificate';
+import { invoiceExecute, invoiceFields, invoiceOperations } from './facturasdk/resources/invoice';
+import { issuerExecute, issuerFields, issuerOperations } from './facturasdk/resources/issuer';
+import {
+	webhookEndpointExecute,
+	webhookEndpointFields,
+	webhookEndpointOperations,
+} from './facturasdk/resources/webhookEndpoint';
+
+type ResourceExecute = (
+	this: IExecuteFunctions,
+	operation: string,
+	itemIndex: number,
+) => Promise<IDataObject | IDataObject[]>;
+
+// Electronic invoicing with Factura SDK: one request per item, with the error kept on the item
+const invoicingExecutors: Record<string, ResourceExecute> = {
+	certificate: certificateExecute,
+	invoice: invoiceExecute,
+	issuer: issuerExecute,
+	webhookEndpoint: webhookEndpointExecute,
+};
 
 export class AfipSdk implements INodeType {
 	description: INodeTypeDescription = {
@@ -27,7 +55,8 @@ export class AfipSdk implements INodeType {
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{ $parameter["resource"] + ": " + $parameter["operation"] }}',
-		description: 'Official Afip SDK nodes.',
+		description:
+			'ARCA web services, automations, PDFs and electronic invoicing with Factura SDK, by Afip SDK',
 		defaults: {
 			name: 'Afip SDK',
 		},
@@ -47,9 +76,13 @@ export class AfipSdk implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: 'Automation', value: 'automation' },
+					{ name: 'Certificate', value: 'certificate' },
+					{ name: 'Invoice', value: 'invoice' },
+					{ name: 'Issuer', value: 'issuer' },
 					{ name: 'PDF', value: 'pdf' },
 					{ name: 'Util', value: 'util' },
 					{ name: 'Web Service', value: 'webService' },
+					{ name: 'Webhook Endpoint', value: 'webhookEndpoint' },
 				],
 				default: 'webService',
 			},
@@ -87,7 +120,8 @@ export class AfipSdk implements INodeType {
 						name: 'Get Result',
 						value: 'getAutomationResult',
 						action: 'Get automation result',
-						description: 'Get automation result and retry if the automation is not complete',
+						description:
+							'Get the result of an automation, started with Run or by an invoicing operation, and wait if it is not complete',
 					},
 					{
 						name: 'Run',
@@ -137,20 +171,32 @@ export class AfipSdk implements INodeType {
 				],
 				default: 'getLastXml',
 			},
+			invoiceOperations,
+			issuerOperations,
+			certificateOperations,
+			webhookEndpointOperations,
 
-			// ── Operations ───────────────────────────────────────────────
+			// ── Fields ───────────────────────────────────────────────────
 			...getTokenAuthFields,
 			...makeRequestFields,
 			...createPdfFields,
 			...runAutomationAndWaitFields,
 			...runAutomationFields,
 			...getAutomationResultFields,
+			...invoiceFields,
+			...issuerFields,
+			...certificateFields,
+			...webhookEndpointFields,
 		],
 		usableAsTool: true,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
+		const invoicingExecutor = invoicingExecutors[resource];
+
+		if (invoicingExecutor) return executeInvoicing.call(this, invoicingExecutor, operation);
 
 		if (operation === 'getTokenAuth') return getTokenAuthExecute.call(this);
 		if (operation === 'makeRequest') return makeRequestExecute.call(this);
@@ -162,4 +208,36 @@ export class AfipSdk implements INodeType {
 
 		throw new NodeOperationError(this.getNode(), `Operation "${operation}" not supported`);
 	}
+}
+
+async function executeInvoicing(
+	this: IExecuteFunctions,
+	executor: ResourceExecute,
+	operation: string,
+): Promise<INodeExecutionData[][]> {
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
+
+	for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+		try {
+			const result = await executor.call(this, operation, itemIndex);
+			const responseItems = this.helpers.returnJsonArray(result);
+
+			returnData.push(
+				...responseItems.map((item) => ({ ...item, pairedItem: { item: itemIndex } })),
+			);
+		} catch (error) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: (error as Error).message },
+					pairedItem: { item: itemIndex },
+				});
+				continue;
+			}
+
+			throw itemError(this.getNode(), error, itemIndex);
+		}
+	}
+
+	return [returnData];
 }
