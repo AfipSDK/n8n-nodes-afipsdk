@@ -48,22 +48,29 @@ export const invoiceOperations: INodeProperties = {
 };
 
 export const invoiceFields: INodeProperties[] = [
-	bodyField(RESOURCE, 'create', {
-		issuer_cuit: '20111111112',
-		invoice_type: 6,
-		concept: 1,
-		receiver: {
-			doc_type: 96,
-			doc_number: '12345678',
-			vat_condition: 5,
-			name: 'Juan Pérez',
-			address: 'Calle Falsa 123, CABA',
+	bodyField(
+		RESOURCE,
+		'create',
+		{
+			issuer_cuit: '20111111112',
+			invoice_type: 6,
+			concept: 1,
+			receiver: {
+				doc_type: 96,
+				doc_number: '12345678',
+				vat_condition: 5,
+				name: 'Juan Pérez',
+				address: 'Calle Falsa 123, CABA',
+			},
+			amounts: { net: 1000, vat: 210, total: 1210 },
+			vat_items: [{ id: 5, base: 1000, amount: 210 }],
+			items: [
+				{ description: 'Teclado inalámbrico', quantity: 1, unit_price: 1210, subtotal: 1210 },
+			],
+			sale_condition: 'Contado',
 		},
-		amounts: { net: 1000, vat: 210, total: 1210 },
-		vat_items: [{ id: 5, base: 1000, amount: 210 }],
-		items: [{ description: 'Teclado inalámbrico', quantity: 1, unit_price: 1210, subtotal: 1210 }],
-		sale_condition: 'Contado',
-	}),
+		'Fields of the invoice, as in the <a href="https://afipsdk.com/docs/facturasdk/invoices">Factura SDK documentation</a>. The example is a Factura B; there is a complete example for every type: <a href="https://afipsdk.com/docs/facturasdk/invoice-a">A</a>, <a href="https://afipsdk.com/docs/facturasdk/invoice-b">B</a>, <a href="https://afipsdk.com/docs/facturasdk/invoice-c">C</a>, <a href="https://afipsdk.com/docs/facturasdk/invoice-e">E (export)</a> and <a href="https://afipsdk.com/docs/facturasdk/invoice-t">T (tourism)</a>, with their credit and debit notes.',
+	),
 	{
 		displayName: 'Idempotency Key',
 		name: 'idempotencyKey',
@@ -109,7 +116,8 @@ export const invoiceFields: INodeProperties[] = [
 			name: 'invoice_type',
 			type: 'number',
 			default: 6,
-			description: 'Type of invoice as in ARCA: 1 Factura A, 6 Factura B, 11 Factura C…',
+			description:
+				'Type of invoice as in ARCA: 1 Factura A, 6 Factura B, 11 Factura C, 19 Factura E (export), 195 Factura T (tourism), and their notes (2, 3, 7, 8, 12, 13, 20, 21, 196, 197)',
 		},
 		{
 			displayName: 'Created From',
