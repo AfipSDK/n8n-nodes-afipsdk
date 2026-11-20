@@ -93,7 +93,7 @@ export const issuerOperations: INodeProperties = {
 			value: 'verify',
 			action: 'Verify an issuer',
 			description:
-				'Issue a $1 invoice and the credit note that cancels it; the issuer becomes active. In production both vouchers are real.',
+				'Verify the web services of the issuer: a $1 invoice and the credit note that cancels it for wsfe, a ticket from ARCA for wsfex and wsct; the issuer becomes active. In production both vouchers are real.',
 		},
 	],
 	default: 'create',
@@ -116,16 +116,26 @@ export const issuerFields: INodeProperties[] = [
 		description: 'CUIT to look up, 11 digits',
 		displayOptions: { show: { resource: [RESOURCE], operation: ['lookup'] } },
 	},
-	bodyField(RESOURCE, 'create', {
-		tax_id: '20111111112',
-		business_name: 'Emisor de prueba',
-		address: 'Av. Siempre Viva 742, CABA',
-		vat_condition: 1,
-		gross_income: '20111111112',
-		activity_start_date: '2020-01-01',
-		sales_point: 1,
-	}),
-	bodyField(RESOURCE, 'update', { address: 'Av. Siempre Viva 744, CABA', sales_point: 2 }),
+	bodyField(
+		RESOURCE,
+		'create',
+		{
+			tax_id: '20111111112',
+			business_name: 'Emisor de prueba',
+			address: 'Av. Siempre Viva 742, CABA',
+			vat_condition: 1,
+			gross_income: '20111111112',
+			activity_start_date: '2020-01-01',
+			sales_point: 1,
+		},
+		'Fields of the issuer, as in the <a href="https://afipsdk.com/docs/facturasdk/issuers">Factura SDK documentation</a>. To issue export (E) or tourism (T) vouchers, enable the web service with its own sales point in <code>services</code>: <a href="https://afipsdk.com/docs/facturasdk/issuers#servicios">services</a>.',
+	),
+	bodyField(
+		RESOURCE,
+		'update',
+		{ address: 'Av. Siempre Viva 744, CABA', sales_point: 2 },
+		'Fields to change, as in the <a href="https://afipsdk.com/docs/facturasdk/issuers#modificar-un-emisor">Factura SDK documentation</a>. <code>services</code> takes the complete list of web services with their sales points.',
+	),
 	bodyField(RESOURCE, 'createCertificate', { cert: 'VALID_CERT', key: 'VALID_KEY' }),
 	bodyField(RESOURCE, 'acceptDelegation', { username: '30715000004', password: '<CLAVE_FISCAL>' }),
 	bodyField(RESOURCE, 'getSalesPoints', {
@@ -133,12 +143,17 @@ export const issuerFields: INodeProperties[] = [
 		username: '20111111112',
 		password: '<CLAVE_FISCAL>',
 	}),
-	bodyField(RESOURCE, 'createSalesPoint', {
-		tax_id: '20111111112',
-		username: '20111111112',
-		password: '<CLAVE_FISCAL>',
-		vat_condition: 1,
-	}),
+	bodyField(
+		RESOURCE,
+		'createSalesPoint',
+		{
+			tax_id: '20111111112',
+			username: '20111111112',
+			password: '<CLAVE_FISCAL>',
+			vat_condition: 1,
+		},
+		'Fields of the sales point, as in the <a href="https://afipsdk.com/docs/facturasdk/issuers#crear-un-punto-de-venta">Factura SDK documentation</a>. With <code>"service": "wsfex"</code> it creates an export sales point, for the E vouchers.',
+	),
 	...waitFields(RESOURCE, AUTOMATION_OPERATIONS),
 	...listFields(RESOURCE, 'getAll', [
 		{

@@ -26,13 +26,18 @@ export function idField(
 /**
  * The JSON body of the request, pre-loaded with an example.
  */
-export function bodyField(resource: string, operation: string, example: object): INodeProperties {
+export function bodyField(
+	resource: string,
+	operation: string,
+	example: object,
+	description = 'Fields of the request, as in the Factura SDK documentation',
+): INodeProperties {
 	return {
 		displayName: 'Body (JSON)',
 		name: 'parametersJson',
 		type: 'json',
 		default: JSON.stringify(example, null, 2),
-		description: 'Fields of the request, as in the Factura SDK documentation',
+		description,
 		displayOptions: { show: { resource: [resource], operation: [operation] } },
 	};
 }
